@@ -381,7 +381,7 @@ public class Steam {
 
         } catch (IOException e) {
             mostrarError("Error al leer juegos: " + e.getMessage());
-        }
+        } 
     }
 
 }
