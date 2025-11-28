@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import javax.swing.JOptionPane;
@@ -29,6 +30,87 @@ public class Steam {
         } catch (Exception e) {
             mostrarError("Error al inicializar Steam: " + e.getMessage());
         }
+    }
+
+    public RandomAccessFile getPlayerFile() {
+        return playerFile;
+    }
+
+    public RandomAccessFile getGamesFile() {
+        return gamesFile;
+    }
+
+    public ArrayList<Game> getAllGames() {
+        ArrayList<Game> lista = new ArrayList<>();
+        try {
+            gamesFile.seek(0);
+
+            while (gamesFile.getFilePointer() < gamesFile.length()) {
+
+                int code = gamesFile.readInt();
+                String titulo = gamesFile.readUTF();
+                char so = gamesFile.readChar();
+                int edadMin = gamesFile.readInt();
+                double precio = gamesFile.readDouble();
+                int contadorDownloads = gamesFile.readInt();
+                String rutaImg = gamesFile.readUTF();
+
+                lista.add(new Game(code, titulo, so, edadMin, precio, contadorDownloads, rutaImg));
+            }
+        } catch (Exception e) {
+            mostrarError("Error obteniendo juegos: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public int login(String username, String password) {
+        try {
+            playerFile.seek(0); 
+
+            while (playerFile.getFilePointer() < playerFile.length()) {
+                long pos = playerFile.getFilePointer();
+
+                int code = playerFile.readInt();
+                String user = playerFile.readUTF();
+                String pass = playerFile.readUTF();
+                playerFile.readUTF();
+                playerFile.readLong();
+                playerFile.readInt(); 
+                int lenImg = playerFile.readInt();
+                playerFile.skipBytes(lenImg);
+                String tipo = playerFile.readUTF();
+
+                if (user.equals(username) && pass.equals(password)) {
+                    return code; 
+                }
+            }
+        } catch (Exception e) {
+            mostrarError("Error login: " + e.getMessage());
+        }
+        return -1;
+    }
+
+    public String getTipoUsuario(int codePlayer) {
+        try {
+            long pos = buscarPlayer(codePlayer);
+            if (pos != -1) {
+                playerFile.seek(pos);
+
+                playerFile.readInt();
+                playerFile.readUTF();
+                playerFile.readUTF();
+                playerFile.readUTF();
+                playerFile.readLong();
+                playerFile.readInt();
+                int lenImg = playerFile.readInt();
+                playerFile.skipBytes(lenImg);
+
+                return playerFile.readUTF();
+            }
+        } catch (Exception e) {
+            mostrarError("Error obteniendo tipo usuario: " + e.getMessage());
+        }
+        return null;
     }
 
     private void crearCarpetas() {
@@ -239,7 +321,7 @@ public class Steam {
             int edadMin = gamesFile.readInt();
             double precio = gamesFile.readDouble();
             int contadorDownloadsJuego = gamesFile.readInt();
-            String rutaImg = gamesFile.readUTF(); 
+            String rutaImg = gamesFile.readUTF();
 
             if (Character.toUpperCase(sistema) != Character.toUpperCase(sistemaOS.charAt(0))) {
                 return false;
@@ -275,7 +357,7 @@ public class Steam {
             pw.println("Precio: $" + precio);
             pw.close();
 
-            gamesFile.seek(posGame + 4 + titulo.length() * 2 + 2 + 1 + 4 + 8); 
+            gamesFile.seek(posGame + 4 + titulo.length() * 2 + 2 + 1 + 4 + 8);
             gamesFile.writeInt(contadorDownloadsJuego + 1);
 
             playerFile.seek(posPlayer + 4 + username.length() * 2 + 2 + password.length() * 2 + 2 + nombre.length() * 2 + 2 + 8);
@@ -381,7 +463,7 @@ public class Steam {
 
         } catch (IOException e) {
             mostrarError("Error al leer juegos: " + e.getMessage());
-        } 
+        }
     }
 
 }

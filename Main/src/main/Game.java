@@ -26,6 +26,10 @@ public class Game {
         this.contadorDownloads = contadorDownloads;
         this.rutaImg = rutaImg;
     }
+    
+    public Game() {
+      
+    }
 
     public int getCode() {
         return code;

@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -26,24 +27,24 @@ public class Archivo {
 
         if (!steamDir.exists()) {
             if(steamDir.mkdir()){
-                System.out.println("Directorio "+dirSteam+" creado con exito");
+                JOptionPane.showMessageDialog(null, "Directorio "+dirSteam+" creado con exito");
             } else{
-                System.out.println("No se pudo crear el directorio "+dirSteam);
+                JOptionPane.showMessageDialog(null, "No se pudo crear el directorio "+dirSteam);
                 return;
             }
         } else{
-            System.out.println("Directorio "+dirSteam+" ya existe");
+            JOptionPane.showMessageDialog(null, "Directorio "+dirSteam+" ya existe");
         }
         
         if(!downloadsDir.exists()){
             if(downloadsDir.mkdir()){
-                System.out.println("Subdirectorio "+dirDownloads+" creado con exito");
+                JOptionPane.showMessageDialog(null, "Subdirectorio "+dirDownloads+" creado con exito");
             } else{
-                System.out.println("No se pudo crear el Subdirectorio "+dirDownloads);
+                JOptionPane.showMessageDialog(null, "No se pudo crear el Subdirectorio "+dirDownloads);
                 return;
             }
         } else{
-            System.out.println("Subdirectorio "+dirDownloads+" ya existe");
+            JOptionPane.showMessageDialog(null, "Subdirectorio "+dirDownloads+" ya existe");
         }
         
         File codesFile = new File(fileCodes);
@@ -53,14 +54,14 @@ public class Archivo {
                 dos.writeInt(1); //este para players
                 dos.writeInt(1); //este para downloads
                 
-                System.out.println("Archivo "+codesFile+" creado  e inicializado en (1, 1, 1)");
+                JOptionPane.showMessageDialog(null, "Archivo "+codesFile+" creado  e inicializado en (1, 1, 1)");
                 
             } catch(IOException e){
-                System.out.println("Error al escribir en "+codesFile);
+                JOptionPane.showMessageDialog(null, "Error al escribir en "+codesFile);
                 e.printStackTrace();
             }
         } else{
-            System.out.println("Archivo "+codesFile+" ya existe. No se modifico");
+            JOptionPane.showMessageDialog(null, "Archivo "+codesFile+" ya existe. No se modifico");
         }
     }
     
