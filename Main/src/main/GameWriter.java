@@ -11,6 +11,8 @@ package main;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import javax.swing.JOptionPane;
+import static main.Archivo.dirSteam;
 
 public class GameWriter {
 
@@ -29,11 +31,11 @@ public class GameWriter {
             dos.writeDouble(newGame.getPrecio());
             dos.writeInt(newGame.getContadorDownloads());
             dos.writeUTF(newGame.getRutaImg());
-
-            System.out.println("Juego con código " + newGame.getCode() + " añadido a games.stm.");
+            
+            JOptionPane.showMessageDialog(null, "Juego con código " + newGame.getCode() + " añadido a games.stm.");
 
         } catch (IOException e) {
-            System.err.println("ERROR al escribir el nuevo juego: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "ERROR al escribir el nuevo juego: " + e.getMessage());
             e.printStackTrace();
         }
     }

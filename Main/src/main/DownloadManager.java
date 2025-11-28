@@ -12,6 +12,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import javax.swing.JOptionPane;
 
 public class DownloadManager {
 
@@ -26,10 +27,10 @@ public class DownloadManager {
             player.setContadorDownloads(player.getContadorDownloads() + 1);
             game.setContadorDownloads(game.getContadorDownloads() + 1);
             
-            System.out.println("Descarga #" + downloadCode + " registrada con éxito.");
+            JOptionPane.showMessageDialog(null, "Descarga #" + downloadCode + " registrada con éxito.");
 
         } catch (IOException e) {
-            System.err.println("ERROR al procesar la descarga #" + downloadCode + ": " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "ERROR al procesar la descarga #" + downloadCode);
             e.printStackTrace();
         }
     }
@@ -49,7 +50,7 @@ public class DownloadManager {
             pw.println("JUGADOR_USERNAME: " + player.getUsername());
             pw.println("---------------------------------");
             
-            System.out.println("Archivo de registro: " + fileName);
+            JOptionPane.showMessageDialog(null, "Archivo de registro: " + fileName);
         }
     }
 }

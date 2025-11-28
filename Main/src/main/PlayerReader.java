@@ -13,38 +13,37 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JOptionPane;
 
 public class PlayerReader {
 
-    private static final String FILE_PLAYERS = "steam/players.stm";
+    private static final String filePlayers = "steam/players.stm";
 
     public static List<Player> readAllPlayers() {
         List<Player> playersList = new ArrayList<>();
         
-        try (DataInputStream dis = new DataInputStream(new FileInputStream(FILE_PLAYERS))) {
+        try (DataInputStream dis = new DataInputStream(new FileInputStream(filePlayers))) {
             
             while (true) {
                 try {
                     Player player = readNextPlayer(dis);
                     playersList.add(player);
                 } catch (java.io.EOFException e) {
-                    // Fin del archivo
                     break; 
                 }
             }
             
         } catch (IOException e) {
-            System.err.println("ERROR al leer el archivo " + FILE_PLAYERS + ": " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "ERROR al leer el archivo " + filePlayers);
         }
         
-        System.out.println("Se leyeron " + playersList.size() + " jugadores del archivo.");
+        JOptionPane.showMessageDialog(null, "Se leyeron " + playersList.size() + " jugadores del archivo.");
         return playersList;
     }
 
     private static Player readNextPlayer(DataInputStream dis) throws IOException {
         Player player = new Player();
         
-        // El orden de lectura DEBE coincidir exactamente con el orden de escritura
         player.setCode(dis.readInt());
         player.setUsername(dis.readUTF());
         player.setPassword(dis.readUTF());

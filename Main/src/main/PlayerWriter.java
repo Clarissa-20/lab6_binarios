@@ -11,6 +11,7 @@ package main;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import javax.swing.JOptionPane;
 
 public class PlayerWriter {
 
@@ -28,9 +29,8 @@ public class PlayerWriter {
             dos.writeInt(newPlayer.getContadorDownloads());
             dos.writeUTF(newPlayer.getRutaImg());
             dos.writeUTF(newPlayer.getTipoUsuario());
-
-            System.out.println("Jugador con código " + newPlayer.getCode() + " añadido a players.stm.");
-
+            
+            JOptionPane.showMessageDialog(null, "Jugador con código " + newPlayer.getCode() + " añadido a players.stm.");
         }
     }
 }

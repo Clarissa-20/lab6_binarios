@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JOptionPane;
 
 public class GameReader {
 
@@ -33,10 +34,9 @@ public class GameReader {
             }
 
         } catch (IOException e) {
-            System.err.println("ERROR al leer el archivo " + fileGame + ": " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "ERROR al leer el archivo " + fileGame);
         }
-
-        System.out.println("Se leyeron " + gamesList.size() + " juegos del archivo.");
+        JOptionPane.showMessageDialog(null, "Se leyeron " + gamesList.size() + " juegos del archivo.");
         return gamesList;
     }
 
