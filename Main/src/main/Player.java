@@ -28,6 +28,10 @@ public class Player {
         this.rutaImg = rutaImg;
         this.tipoUsuario = tipoUsuario;
     }
+    
+    public Player() {
+       
+    }
 
     public int getCode() {
         return code;
