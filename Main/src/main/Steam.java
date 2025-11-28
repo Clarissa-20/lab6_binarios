@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
+import java.util.Calendar;
+import java.util.Date;
 import javax.swing.JOptionPane;
 
 /**
@@ -68,12 +70,12 @@ public class Steam {
 
     private int obtenerProximoCodigo(int tipo) {
         try {
-            long position = tipo * 4;
-            codesFile.seek(position);
+            long pos = tipo * 4;
+            codesFile.seek(pos);
 
             int codigo = codesFile.readInt();
 
-            codesFile.seek(position);
+            codesFile.seek(pos);
             codesFile.writeInt(codigo + 1);
 
             return codigo;
@@ -96,7 +98,7 @@ public class Steam {
         return obtenerProximoCodigo(2);
     }
 
-    public boolean addGame(String titulo, char sistemaOperativo, int edadMin, double precio, byte[] imagenBytes) {
+    public boolean addGame(String titulo, char sistemaOperativo, int edadMin, double precio, String rutaImg) {
         try {
             int code = nextGameCode();
             gamesFile.seek(gamesFile.length());
@@ -107,12 +109,8 @@ public class Steam {
             gamesFile.writeInt(edadMin);
             gamesFile.writeDouble(precio);
             gamesFile.writeInt(0);
-
-            gamesFile.writeInt(imagenBytes.length);
-            gamesFile.write(imagenBytes);
-
+            gamesFile.writeUTF(rutaImg);
             return true;
-
         } catch (IOException e) {
             mostrarError("No se pudo agregar el juego: " + e.getMessage());
             return false;
@@ -209,19 +207,18 @@ public class Steam {
     }
 
     private int calcularEdad(long nacimiento) {
-        java.util.Date fechaNac = new java.util.Date(nacimiento);
-        java.util.Calendar calNac = java.util.Calendar.getInstance();
+        Date fechaNac = new Date(nacimiento);
+        Calendar calNac = Calendar.getInstance();
         calNac.setTime(fechaNac);
 
-        java.util.Calendar hoy = java.util.Calendar.getInstance();
+        Calendar hoy = Calendar.getInstance();
 
-        int edad = hoy.get(java.util.Calendar.YEAR) - calNac.get(java.util.Calendar.YEAR);
+        int edad = hoy.get(Calendar.YEAR) - calNac.get(Calendar.YEAR);
 
-        int mesHoy = hoy.get(java.util.Calendar.MONTH);
-        int mesNac = calNac.get(java.util.Calendar.MONTH);
+        int mesHoy = hoy.get(Calendar.MONTH);
+        int mesNac = calNac.get(Calendar.MONTH);
 
-        if (mesHoy < mesNac || (mesHoy == mesNac
-                && hoy.get(java.util.Calendar.DAY_OF_MONTH) < calNac.get(java.util.Calendar.DAY_OF_MONTH))) {
+        if (mesHoy < mesNac || (mesHoy == mesNac && hoy.get(Calendar.DAY_OF_MONTH) < calNac.get(Calendar.DAY_OF_MONTH))) {
             edad--;
         }
 
@@ -242,9 +239,7 @@ public class Steam {
             int edadMin = gamesFile.readInt();
             double precio = gamesFile.readDouble();
             int contadorDownloadsJuego = gamesFile.readInt();
-
-            int lenImgJ = gamesFile.readInt();
-            gamesFile.skipBytes(lenImgJ);
+            String rutaImg = gamesFile.readUTF(); 
 
             if (Character.toUpperCase(sistema) != Character.toUpperCase(sistemaOS.charAt(0))) {
                 return false;
@@ -262,10 +257,6 @@ public class Steam {
             String nombre = playerFile.readUTF();
             long nacimiento = playerFile.readLong();
             int contadorDownloadsPlayer = playerFile.readInt();
-
-            int lenImgP = playerFile.readInt();
-            playerFile.skipBytes(lenImgP);
-
             String tipo = playerFile.readUTF();
 
             int edad = calcularEdad(nacimiento);
@@ -278,18 +269,16 @@ public class Steam {
             PrintWriter pw = new PrintWriter(f);
 
             pw.println("FECHA: " + new java.util.Date());
-            pw.println("(IMAGEN DEL JUEGO)");
+            pw.println("IMAGEN: " + rutaImg);
             pw.println("Download #" + codDownload);
             pw.println(nombre + " ha bajado " + titulo);
             pw.println("Precio: $" + precio);
             pw.close();
 
-            gamesFile.seek(posGame + 4 + titulo.length() + 2 + 1 + 4 + 8);
+            gamesFile.seek(posGame + 4 + titulo.length() * 2 + 2 + 1 + 4 + 8); 
             gamesFile.writeInt(contadorDownloadsJuego + 1);
 
-            long offsetPlayer = posPlayer;
-            offsetPlayer += 4 + username.length() + 2 + password.length() + 2 + nombre.length() + 2 + 8;
-            playerFile.seek(offsetPlayer);
+            playerFile.seek(posPlayer + 4 + username.length() * 2 + 2 + password.length() * 2 + 2 + nombre.length() * 2 + 2 + 8);
             playerFile.writeInt(contadorDownloadsPlayer + 1);
 
             return true;
@@ -349,7 +338,7 @@ public class Steam {
             pw.println("Código: " + code);
             pw.println("Usuario: " + username);
             pw.println("Nombre: " + nombre);
-            pw.println("Nacimiento: " + new java.util.Date(nacimiento));
+            pw.println("Nacimiento: " + new Date(nacimiento));
             pw.println("Descargas: " + descargas);
             pw.println("Tipo: " + tipo);
             pw.close();
