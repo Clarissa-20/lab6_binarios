@@ -6,9 +6,8 @@ package main;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
+import java.io.PrintWriter;
 import java.util.Calendar;
 import java.util.Date;
 import javax.swing.JOptionPane;
@@ -40,48 +39,24 @@ public class Steam {
         return gamesFile;
     }
 
-    public ArrayList<Game> getAllGames() {
-        ArrayList<Game> lista = new ArrayList<>();
-        try {
-            gamesFile.seek(0);
-
-            while (gamesFile.getFilePointer() < gamesFile.length()) {
-
-                int code = gamesFile.readInt();
-                String titulo = gamesFile.readUTF();
-                char so = gamesFile.readChar();
-                int edadMin = gamesFile.readInt();
-                double precio = gamesFile.readDouble();
-                int contadorDownloads = gamesFile.readInt();
-                String rutaImg = gamesFile.readUTF();
-
-                lista.add(new Game(code, titulo, so, edadMin, precio, contadorDownloads, rutaImg));
-            }
-        } catch (Exception e) {
-            mostrarError("Error obteniendo juegos: " + e.getMessage());
-        }
-        return lista;
-    }
-
+    // ------------------ LOGIN Y TIPOS ------------------
     public int login(String username, String password) {
         try {
-            playerFile.seek(0); 
-
+            playerFile.seek(0);
             while (playerFile.getFilePointer() < playerFile.length()) {
                 long pos = playerFile.getFilePointer();
-
                 int code = playerFile.readInt();
                 String user = playerFile.readUTF();
                 String pass = playerFile.readUTF();
-                playerFile.readUTF();
-                playerFile.readLong();
-                playerFile.readInt(); 
+                playerFile.readUTF(); // nombre
+                playerFile.readLong(); // nacimiento
+                playerFile.readInt(); // contador
                 int lenImg = playerFile.readInt();
                 playerFile.skipBytes(lenImg);
                 String tipo = playerFile.readUTF();
 
                 if (user.equals(username) && pass.equals(password)) {
-                    return code; 
+                    return code;
                 }
             }
         } catch (Exception e) {
@@ -95,7 +70,6 @@ public class Steam {
             long pos = buscarPlayer(codePlayer);
             if (pos != -1) {
                 playerFile.seek(pos);
-
                 playerFile.readInt();
                 playerFile.readUTF();
                 playerFile.readUTF();
@@ -104,7 +78,6 @@ public class Steam {
                 playerFile.readInt();
                 int lenImg = playerFile.readInt();
                 playerFile.skipBytes(lenImg);
-
                 return playerFile.readUTF();
             }
         } catch (Exception e) {
@@ -113,6 +86,7 @@ public class Steam {
         return null;
     }
 
+    // ------------------ CREAR DIRECTORIOS Y ARCHIVOS ------------------
     private void crearCarpetas() {
         File carpetaSteam = new File("steam");
         File carpetaDownloads = new File("steam/downloads");
@@ -136,9 +110,9 @@ public class Steam {
             playerFile = new RandomAccessFile(players, "rw");
 
             if (codes.length() == 0) {
-                codesFile.writeInt(1);
-                codesFile.writeInt(1);
-                codesFile.writeInt(1);
+                codesFile.writeInt(1); // games
+                codesFile.writeInt(1); // players
+                codesFile.writeInt(1); // downloads
             }
 
         } catch (IOException ex) {
@@ -150,18 +124,15 @@ public class Steam {
         JOptionPane.showMessageDialog(null, mensaje, "ERROR DE ARCHIVO", JOptionPane.ERROR_MESSAGE);
     }
 
+    // ------------------ PROXIMO CODIGO ------------------
     private int obtenerProximoCodigo(int tipo) {
         try {
             long pos = tipo * 4;
             codesFile.seek(pos);
-
             int codigo = codesFile.readInt();
-
             codesFile.seek(pos);
             codesFile.writeInt(codigo + 1);
-
             return codigo;
-
         } catch (IOException ex) {
             mostrarError("Error obteniendo código: " + ex.getMessage());
             return -1;
@@ -180,17 +151,17 @@ public class Steam {
         return obtenerProximoCodigo(2);
     }
 
+    // ------------------ ADD GAME ------------------
     public boolean addGame(String titulo, char sistemaOperativo, int edadMin, double precio, String rutaImg) {
         try {
             int code = nextGameCode();
             gamesFile.seek(gamesFile.length());
-
             gamesFile.writeInt(code);
             gamesFile.writeUTF(titulo);
-            gamesFile.writeChar(sistemaOperativo);
+            gamesFile.writeChar(Character.toUpperCase(sistemaOperativo));
             gamesFile.writeInt(edadMin);
             gamesFile.writeDouble(precio);
-            gamesFile.writeInt(0);
+            gamesFile.writeInt(0); // contador downloads
             gamesFile.writeUTF(rutaImg);
             return true;
         } catch (IOException e) {
@@ -199,119 +170,34 @@ public class Steam {
         }
     }
 
+    // ------------------ ADD PLAYER ------------------
     public boolean addPlayer(String username, String password, String nombre, long nacimiento, byte[] imagenBytes, String tipo) {
         try {
             int code = nextPlayerCode();
             playerFile.seek(playerFile.length());
-
             playerFile.writeInt(code);
             playerFile.writeUTF(username);
             playerFile.writeUTF(password);
             playerFile.writeUTF(nombre);
             playerFile.writeLong(nacimiento);
-            playerFile.writeInt(0);
-
+            playerFile.writeInt(0); // contador downloads
             playerFile.writeInt(imagenBytes.length);
             playerFile.write(imagenBytes);
-
             playerFile.writeUTF(tipo);
-
             return true;
-
         } catch (IOException e) {
             mostrarError("No se pudo agregar el jugador: " + e.getMessage());
             return false;
         }
     }
 
-    private long buscarJuego(int codeBuscado) {
+    // ------------------ DOWNLOAD GAME ------------------
+    public boolean downloadGame(int codeGame, int codePlayer, String so) {
         try {
-            gamesFile.seek(0);
-
-            while (gamesFile.getFilePointer() < gamesFile.length()) {
-
-                long posRegistro = gamesFile.getFilePointer();
-
-                int code = gamesFile.readInt();
-                String titulo = gamesFile.readUTF();
-                char sistema = gamesFile.readChar();
-                int edadMin = gamesFile.readInt();
-                double precio = gamesFile.readDouble();
-                int descargas = gamesFile.readInt();
-
-                int lenImg = gamesFile.readInt();
-                gamesFile.skipBytes(lenImg);
-
-                if (code == codeBuscado) {
-                    return posRegistro;
-                }
-            }
-
-            return -1;
-
-        } catch (IOException e) {
-            mostrarError("Error al buscar juego: " + e.getMessage());
-            return -1;
-        }
-    }
-
-    private long buscarPlayer(int codeBuscado) {
-        try {
-            playerFile.seek(0);
-
-            while (playerFile.getFilePointer() < playerFile.length()) {
-
-                long posRegistro = playerFile.getFilePointer();
-
-                int code = playerFile.readInt();
-                String username = playerFile.readUTF();
-                String password = playerFile.readUTF();
-                String nombre = playerFile.readUTF();
-                long nacimiento = playerFile.readLong();
-                int descargas = playerFile.readInt();
-
-                int lenImg = playerFile.readInt();
-                playerFile.skipBytes(lenImg);
-
-                String tipo = playerFile.readUTF();
-
-                if (code == codeBuscado) {
-                    return posRegistro;
-                }
-            }
-
-            return -1;
-
-        } catch (IOException e) {
-            mostrarError("Error al buscar jugador: " + e.getMessage());
-            return -1;
-        }
-    }
-
-    private int calcularEdad(long nacimiento) {
-        Date fechaNac = new Date(nacimiento);
-        Calendar calNac = Calendar.getInstance();
-        calNac.setTime(fechaNac);
-
-        Calendar hoy = Calendar.getInstance();
-
-        int edad = hoy.get(Calendar.YEAR) - calNac.get(Calendar.YEAR);
-
-        int mesHoy = hoy.get(Calendar.MONTH);
-        int mesNac = calNac.get(Calendar.MONTH);
-
-        if (mesHoy < mesNac || (mesHoy == mesNac && hoy.get(Calendar.DAY_OF_MONTH) < calNac.get(Calendar.DAY_OF_MONTH))) {
-            edad--;
-        }
-
-        return edad;
-    }
-
-    public boolean downloadGame(int codeGame, int codePlayer, String sistemaOS) {
-        try {
+            // Buscar el juego por su código
             long posGame = buscarJuego(codeGame);
             if (posGame == -1) {
-                return false;
+                return false; // Juego no encontrado
             }
 
             gamesFile.seek(posGame);
@@ -323,13 +209,15 @@ public class Steam {
             int contadorDownloadsJuego = gamesFile.readInt();
             String rutaImg = gamesFile.readUTF();
 
-            if (Character.toUpperCase(sistema) != Character.toUpperCase(sistemaOS.charAt(0))) {
+            // Validar sistema operativo
+            if (Character.toUpperCase(sistema) != Character.toUpperCase(so.charAt(0))) {
                 return false;
             }
 
+            // Buscar el jugador por su código
             long posPlayer = buscarPlayer(codePlayer);
             if (posPlayer == -1) {
-                return false;
+                return false; // Jugador no encontrado
             }
 
             playerFile.seek(posPlayer);
@@ -339,27 +227,32 @@ public class Steam {
             String nombre = playerFile.readUTF();
             long nacimiento = playerFile.readLong();
             int contadorDownloadsPlayer = playerFile.readInt();
+            int lenImg = playerFile.readInt();
+            playerFile.skipBytes(lenImg);
             String tipo = playerFile.readUTF();
 
+            // Validar edad mínima
             int edad = calcularEdad(nacimiento);
             if (edad < edadMin) {
                 return false;
             }
 
+            // Generar nuevo código de descarga
             int codDownload = nextDownloadCode();
             File f = new File("steam/downloads/download_" + codDownload + ".stm");
-            PrintWriter pw = new PrintWriter(f);
+            try (PrintWriter pw = new PrintWriter(f)) {
+                pw.println("FECHA: " + new java.util.Date());
+                pw.println("IMAGEN: " + rutaImg);
+                pw.println("Download #" + codDownload);
+                pw.println(nombre + " ha bajado " + titulo);
+                pw.println("Precio: $" + precio);
+            }
 
-            pw.println("FECHA: " + new java.util.Date());
-            pw.println("IMAGEN: " + rutaImg);
-            pw.println("Download #" + codDownload);
-            pw.println(nombre + " ha bajado " + titulo);
-            pw.println("Precio: $" + precio);
-            pw.close();
-
-            gamesFile.seek(posGame + 4 + titulo.length() * 2 + 2 + 1 + 4 + 8);
+            // Actualizar contador de descargas en games.stm
+            gamesFile.seek(posGame + 4 + titulo.length() * 2 + 2 + 2 + 4); // Ajuste exacto de bytes
             gamesFile.writeInt(contadorDownloadsJuego + 1);
 
+            // Actualizar contador de descargas en player.stm
             playerFile.seek(posPlayer + 4 + username.length() * 2 + 2 + password.length() * 2 + 2 + nombre.length() * 2 + 2 + 8);
             playerFile.writeInt(contadorDownloadsPlayer + 1);
 
@@ -371,29 +264,27 @@ public class Steam {
         }
     }
 
+    // ------------------ UPDATE PRICE ------------------
     public boolean updatePriceFor(int code, double newPrice) {
         try {
             long pos = buscarJuego(code);
             if (pos == -1) {
                 return false;
             }
-
             gamesFile.seek(pos);
-            gamesFile.readInt();
-            gamesFile.readUTF();
-            gamesFile.readChar();
-            gamesFile.readInt();
-
+            gamesFile.readInt(); // code
+            gamesFile.readUTF(); // titulo
+            gamesFile.readChar(); // SO
+            gamesFile.readInt(); // edadMin
             gamesFile.writeDouble(newPrice);
-
             return true;
-
         } catch (IOException e) {
             mostrarError("Error al actualizar precio: " + e.getMessage());
             return false;
         }
     }
 
+    // ------------------ REPORT CLIENT ------------------
     public void reportForClient(int codePlayer, String filename) {
         try {
             long pos = buscarPlayer(codePlayer);
@@ -409,21 +300,19 @@ public class Steam {
             String nombre = playerFile.readUTF();
             long nacimiento = playerFile.readLong();
             int descargas = playerFile.readInt();
-
             int lenImg = playerFile.readInt();
             playerFile.skipBytes(lenImg);
-
             String tipo = playerFile.readUTF();
 
-            PrintWriter pw = new PrintWriter("steam/" + filename);
-            pw.println("===== REPORTE DE CLIENTE =====");
-            pw.println("Código: " + code);
-            pw.println("Usuario: " + username);
-            pw.println("Nombre: " + nombre);
-            pw.println("Nacimiento: " + new Date(nacimiento));
-            pw.println("Descargas: " + descargas);
-            pw.println("Tipo: " + tipo);
-            pw.close();
+            try (PrintWriter pw = new PrintWriter("steam/" + filename)) {
+                pw.println("===== REPORTE DE CLIENTE =====");
+                pw.println("Código: " + code);
+                pw.println("Usuario: " + username);
+                pw.println("Nombre: " + nombre);
+                pw.println("Nacimiento: " + new Date(nacimiento));
+                pw.println("Descargas: " + descargas);
+                pw.println("Tipo: " + tipo);
+            }
 
             JOptionPane.showMessageDialog(null, "REPORTE CREADO");
 
@@ -432,23 +321,19 @@ public class Steam {
         }
     }
 
+    // ------------------ PRINT GAMES ------------------
     public void printGames() {
         try {
             gamesFile.seek(0);
-
             String lista = "";
-
             while (gamesFile.getFilePointer() < gamesFile.length()) {
-
                 int code = gamesFile.readInt();
                 String titulo = gamesFile.readUTF();
                 char os = gamesFile.readChar();
                 int edad = gamesFile.readInt();
                 double precio = gamesFile.readDouble();
                 int descargas = gamesFile.readInt();
-
-                int lenImg = gamesFile.readInt();
-                gamesFile.skipBytes(lenImg);
+                String rutaImg = gamesFile.readUTF();
 
                 lista += "Código: " + code
                         + "\nTítulo: " + titulo
@@ -458,12 +343,60 @@ public class Steam {
                         + "\nDescargas: " + descargas
                         + "\n-------------------------\n";
             }
-
             JOptionPane.showMessageDialog(null, new javax.swing.JScrollPane(new javax.swing.JTextArea(lista)));
-
         } catch (IOException e) {
             mostrarError("Error al leer juegos: " + e.getMessage());
         }
     }
 
+    // ------------------ AUXILIARES ------------------
+    private long buscarJuego(int codeBuscado) throws IOException {
+        gamesFile.seek(0);
+        while (gamesFile.getFilePointer() < gamesFile.length()) {
+            long pos = gamesFile.getFilePointer();
+            int code = gamesFile.readInt();
+            String titulo = gamesFile.readUTF();
+            char sistema = gamesFile.readChar();
+            int edadMin = gamesFile.readInt();
+            double precio = gamesFile.readDouble();
+            int descargas = gamesFile.readInt();
+            String rutaImg = gamesFile.readUTF();
+            if (code == codeBuscado) {
+                return pos;
+            }
+        }
+        return -1;
+    }
+
+    private long buscarPlayer(int codeBuscado) throws IOException {
+        playerFile.seek(0);
+        while (playerFile.getFilePointer() < playerFile.length()) {
+            long pos = playerFile.getFilePointer();
+            int code = playerFile.readInt();
+            String username = playerFile.readUTF();
+            String password = playerFile.readUTF();
+            String nombre = playerFile.readUTF();
+            long nacimiento = playerFile.readLong();
+            int descargas = playerFile.readInt();
+            int lenImg = playerFile.readInt();
+            playerFile.skipBytes(lenImg);
+            String tipo = playerFile.readUTF();
+            if (code == codeBuscado) {
+                return pos;
+            }
+        }
+        return -1;
+    }
+
+    private int calcularEdad(long nacimiento) {
+        Calendar calNac = Calendar.getInstance();
+        calNac.setTime(new Date(nacimiento));
+        Calendar hoy = Calendar.getInstance();
+        int edad = hoy.get(Calendar.YEAR) - calNac.get(Calendar.YEAR);
+        if (hoy.get(Calendar.MONTH) < calNac.get(Calendar.MONTH)
+                || (hoy.get(Calendar.MONTH) == calNac.get(Calendar.MONTH) && hoy.get(Calendar.DAY_OF_MONTH) < calNac.get(Calendar.DAY_OF_MONTH))) {
+            edad--;
+        }
+        return edad;
+    }
 }
