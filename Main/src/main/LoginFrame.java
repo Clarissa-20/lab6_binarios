@@ -111,7 +111,7 @@ public class LoginFrame extends JFrame {
             userFrame.setVisible(true);
         }
  
-        this.dispose(); // Cierra el login
+        this.dispose();
     }
 }
 

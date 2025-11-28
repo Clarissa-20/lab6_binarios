@@ -19,9 +19,6 @@ import java.util.Calendar;
  * @author Nathan
  */
 
-/**
- * GUI principal de Steam
- */
 public class SteamGUI extends JFrame {
 
     private Steam steam;
@@ -96,7 +93,6 @@ public class SteamGUI extends JFrame {
         return null;
     }
 
-    // ================== ADMIN GUI ===================
     private void showAdminGUI(){
         tabs = new JTabbedPane();
         panelAdminPlayers = new JPanel();
@@ -265,7 +261,6 @@ public class SteamGUI extends JFrame {
         }
     }
 
-    // ================== Admin Juegos ===================
     private void setupAdminGames(){
         panelAdminGames.setLayout(new BorderLayout());
 
@@ -429,7 +424,6 @@ public class SteamGUI extends JFrame {
         }
     }
 
-    // ================== Admin Reports ===================
     private void setupAdminReports(){
         panelAdminReports.setLayout(new BorderLayout());
 
@@ -466,7 +460,6 @@ public class SteamGUI extends JFrame {
         });
     }
 
-    // ================== USER GUI ===================
     private void showUserGUI(){
         tabs = new JTabbedPane();
         panelUserCatalog = new JPanel();

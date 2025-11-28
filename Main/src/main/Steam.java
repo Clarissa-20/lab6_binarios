@@ -39,7 +39,6 @@ public class Steam {
         return gamesFile;
     }
 
-    // ------------------ LOGIN Y TIPOS ------------------
     public int login(String username, String password) {
         try {
             playerFile.seek(0);
@@ -86,7 +85,6 @@ public class Steam {
         return null;
     }
 
-    // ------------------ CREAR DIRECTORIOS Y ARCHIVOS ------------------
     private void crearCarpetas() {
         File carpetaSteam = new File("steam");
         File carpetaDownloads = new File("steam/downloads");
@@ -124,7 +122,6 @@ public class Steam {
         JOptionPane.showMessageDialog(null, mensaje, "ERROR DE ARCHIVO", JOptionPane.ERROR_MESSAGE);
     }
 
-    // ------------------ PROXIMO CODIGO ------------------
     private int obtenerProximoCodigo(int tipo) {
         try {
             long pos = tipo * 4;
@@ -151,7 +148,6 @@ public class Steam {
         return obtenerProximoCodigo(2);
     }
 
-    // ------------------ ADD GAME ------------------
     public boolean addGame(String titulo, char sistemaOperativo, int edadMin, double precio, String rutaImg) {
         try {
             int code = nextGameCode();
@@ -170,7 +166,6 @@ public class Steam {
         }
     }
 
-    // ------------------ ADD PLAYER ------------------
     public boolean addPlayer(String username, String password, String nombre, long nacimiento, byte[] imagenBytes, String tipo) {
         try {
             int code = nextPlayerCode();
@@ -191,7 +186,6 @@ public class Steam {
         }
     }
 
-    // ------------------ DOWNLOAD GAME ------------------
     public boolean downloadGame(int codeGame, int codePlayer, String so) {
         try {
             // Buscar el juego por su código
@@ -264,7 +258,6 @@ public class Steam {
         }
     }
 
-    // ------------------ UPDATE PRICE ------------------
     public boolean updatePriceFor(int code, double newPrice) {
         try {
             long pos = buscarJuego(code);
@@ -284,7 +277,6 @@ public class Steam {
         }
     }
 
-    // ------------------ REPORT CLIENT ------------------
     public void reportForClient(int codePlayer, String filename) {
         try {
             long pos = buscarPlayer(codePlayer);
@@ -321,7 +313,6 @@ public class Steam {
         }
     }
 
-    // ------------------ PRINT GAMES ------------------
     public void printGames() {
         try {
             gamesFile.seek(0);
@@ -349,7 +340,6 @@ public class Steam {
         }
     }
 
-    // ------------------ AUXILIARES ------------------
     private long buscarJuego(int codeBuscado) throws IOException {
         gamesFile.seek(0);
         while (gamesFile.getFilePointer() < gamesFile.length()) {
