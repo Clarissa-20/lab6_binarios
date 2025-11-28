@@ -8,6 +8,6 @@ package main;
  *
  * @author Nathan
  */
-public class LoginFrame {
+public class UserFrame {
     
 }

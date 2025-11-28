@@ -6,7 +6,9 @@
 package main;
 
 import javax.swing.*;
-import java.util.Calendar;
+import java.io.File;
+import java.io.IOException; 
+
 /**
  *
  * @author HP
@@ -15,55 +17,44 @@ public class Main {
 
     public static void main(String[] args) {
 
+        // 1. Inicializar directorios y archivos necesarios
+        Archivo.iniciarSistema();
 
+        // 2. Inicializar Steam
         Steam steam = new Steam();
 
-        if (!existeAdmin(steam)) {
-            String username = "admin";
-            String password = "admin123";
-            String nombre = "Administrador";
-            long nacimiento = Calendar.getInstance().getTimeInMillis(); 
-            String tipo = "admin"; 
-            byte[] imagenVacia = new byte[0];
+        // 3. Verificar que exista un admin por defecto
+        ensureDefaultAdmin(steam);
 
-            boolean creado = steam.addPlayer(username, password, nombre, nacimiento, imagenVacia, tipo);
-            if (creado) {
-                JOptionPane.showMessageDialog(null, "Usuario ADMIN creado por defecto.\nUsuario: admin\nContraseña: admin123");
-            } else {
-                JOptionPane.showMessageDialog(null, "No se pudo crear el ADMIN por defecto.");
-            }
-        }
-
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            LoginFrame login = new LoginFrame(steam);
-            login.setVisible(true);
+        // 4. Lanzar GUI
+        SwingUtilities.invokeLater(() -> {
+            SteamGUI gui = new SteamGUI(steam);
+            gui.setVisible(true);
         });
     }
 
-    private static boolean existeAdmin(Steam steam) {
+    private static void ensureDefaultAdmin(Steam steam){
         try {
-            steam.getPlayerFile().seek(0);
-
-            while (steam.getPlayerFile().getFilePointer() < steam.getPlayerFile().length()) {
-                steam.getPlayerFile().readInt(); 
-                steam.getPlayerFile().readUTF(); 
-                steam.getPlayerFile().readUTF(); 
-                steam.getPlayerFile().readUTF(); 
-                steam.getPlayerFile().readLong(); 
-                steam.getPlayerFile().readInt();
-                int lenImg = steam.getPlayerFile().readInt();
-                steam.getPlayerFile().skipBytes(lenImg);
-                String tipo = steam.getPlayerFile().readUTF();
-
-                if ("admin".equalsIgnoreCase(tipo)) {
-                    return true;
+            boolean adminExists = false;
+            for(Player p : PlayerReader.readAllPlayers()){
+                if(p.getTipoUsuario().equalsIgnoreCase("admin")){
+                    adminExists = true;
+                    break;
                 }
             }
 
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Error verificando admin: " + e.getMessage());
+            if(!adminExists){
+                // Crear admin por defecto
+                int code = CodeManager.getNextPlayerCode();
+                long nacimiento = System.currentTimeMillis() - 25L*365*24*3600*1000; // 25 años aprox.
+                Player admin = new Player(code,"admin","admin","Administrador",nacimiento,0,"","admin");
+                PlayerWriter.writeNewPlayer(admin);
+                JOptionPane.showMessageDialog(null,"Se creó usuario admin por defecto:\nUsuario: admin\nContraseña: admin");
+            }
+        } catch(IOException e){
+            JOptionPane.showMessageDialog(null,"Error al crear admin por defecto: "+e.getMessage());
+            e.printStackTrace();
         }
-
-        return false;
     }
 }
+

@@ -8,7 +8,9 @@ package main;
  *
  * @author HP
  */
+
 public class Game {
+
     private int code;
     private String titulo;
     private char sistemaOperativo;
@@ -26,9 +28,8 @@ public class Game {
         this.contadorDownloads = contadorDownloads;
         this.rutaImg = rutaImg;
     }
-    
+
     public Game() {
-      
     }
 
     public int getCode() {
@@ -86,6 +87,4 @@ public class Game {
     public void setRutaImg(String rutaImg) {
         this.rutaImg = rutaImg;
     }
-    
-    
 }
