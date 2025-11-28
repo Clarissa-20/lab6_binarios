@@ -8,7 +8,9 @@ package main;
  *
  * @author HP
  */
+
 public class Player {
+
     private int code;
     private String username;
     private String password;
@@ -28,9 +30,8 @@ public class Player {
         this.rutaImg = rutaImg;
         this.tipoUsuario = tipoUsuario;
     }
-    
+
     public Player() {
-       
     }
 
     public int getCode() {
@@ -96,6 +97,4 @@ public class Player {
     public void setTipoUsuario(String tipoUsuario) {
         this.tipoUsuario = tipoUsuario;
     }
-    
-    
 }
